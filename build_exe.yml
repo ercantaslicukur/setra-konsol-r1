@@ -1,0 +1,50 @@
+name: Windows EXE Derle
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:        # Elle de tetiklenebilir
+
+jobs:
+  build-windows-exe:
+    runs-on: windows-latest  # Gerçek Windows Server 2022
+
+    steps:
+      - name: Kodu indir
+        uses: actions/checkout@v4
+
+      - name: Python kur (3.11)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Bağımlılıkları kur
+        run: |
+          pip install reportlab openpyxl pyinstaller
+
+      - name: EXE derle
+        run: |
+          pyinstaller setra_konsol.py `
+            --onefile `
+            --windowed `
+            --name SETRA_B5_Stabilite `
+            --hidden-import reportlab `
+            --hidden-import reportlab.platypus `
+            --hidden-import reportlab.lib.pagesizes `
+            --hidden-import reportlab.lib.colors `
+            --hidden-import reportlab.lib.units `
+            --hidden-import reportlab.lib.styles `
+            --hidden-import reportlab.pdfgen.canvas `
+            --hidden-import reportlab.pdfbase.ttfonts `
+            --hidden-import reportlab.pdfbase.pdfmetrics `
+            --hidden-import openpyxl `
+            --hidden-import openpyxl.styles `
+            --hidden-import openpyxl.utils `
+            --clean --noconfirm
+
+      - name: EXE'yi artifact olarak yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: SETRA_B5_Stabilite_Windows
+          path: dist\SETRA_B5_Stabilite.exe
+          retention-days: 30    # 30 gün indirilebilir
